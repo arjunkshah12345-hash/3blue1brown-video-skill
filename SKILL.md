@@ -2,7 +2,7 @@
 name: 3blue1brown-video
 description: Create 3Blue1Brown-style educational animations with narrative storytelling, visual metaphors, and Manim-like programmatic animation. Generates explainer videos with the signature question-driven storytelling, smooth transforms, and elegant math/CS visualizations.
 user-invocable: true
-argument-hint: [TOPIC=<value>] [AUDIENCE=<value>]
+argument-hint: "[TOPIC=<value>] [AUDIENCE=<value>]"
 ---
 
 # 3Blue1Brown Video Creator
@@ -242,17 +242,26 @@ self.play(self.camera.frame.animate.scale(0.5).move_to(eq))
 
 ## Example Library
 
-The scratch workspace contains a comprehensive example library at:
-`/Users/arjunkshah21/.t3/scratch/2026-10-25-do-deep-research-on-3blue1brown-164b076f/examples/`
+The skill ships its example library in `examples/` (next to this file). Render any scene with:
+
+```bash
+cd examples && manim render -r 1920,1080 --frame_rate 30 02_winding_circles.py SquareWaveEpicycles
+```
+
+Equations need LaTeX (`latex` and `dvisvgm` on PATH: MacTeX, TeX Live or TinyTeX). Render scenes one at a
+time, or give each parallel job its own `--media_dir`: concurrent renders sharing one `media/Tex` cache race.
 
 ### Available Examples
 - **01_morphing_equations.py** - Euler's identity derivation, Pythagorean theorem rearrangement using TransformMatchingTex
 - **02_winding_circles.py** - Fourier series / Gibbs phenomenon with winding circles, updaters
 - **03_vector_transformations.py** - Shear, rotation, scaling with determinant visualization
+- **essence_of_derivative_simple.py** - Secant lines sliding into a tangent
+- **launch_film.py** - The skill's launch film (about 100 seconds, narrated): question, growing-square proof of d/dx x² = 2x, the arc, the pipeline, a pattern montage and an end card. A full worked example of the three-act structure.
 
 ### Supporting Library (b3b/)
 - `palette.py` - 3B1B color scheme
 - `style.py` - Base scene classes with narration helpers
+- `audio.py` - Built-in sound: procedural score, sound cues and voiceover (mixed into every b3b scene)
 - `animations.py`, `camera.py`, `fourier.py`, `graphing.py` - Reusable utilities
 
 ### Documentation
@@ -263,49 +272,78 @@ Use these as reference implementations for creating authentic 3Blue1Brown-style 
 
 ## Audio & Narration
 
-3Blue1Brown videos have voiceover narration that follows specific patterns:
+Every b3b scene has sound built in. `b3b/audio.py` synthesises everything from numpy and scipy, then Manim mixes it into the MP4. It needs nothing that isn't already installed: no samples, no model downloads and no API keys.
 
-### Voice Characteristics
-- Conversational, thoughtful tone (like explaining to a friend)
-- Measured pacing with natural pauses
-- Uses questions and thinking-out-loud phrasing
-- Subtle enthusiasm without being over-dramatized
-- Clear articulation, intellectual but accessible
+### Music (automatic)
+When a scene ends, a quiet felt-piano score in D major is laid under the whole scene. It plays a I-vi-IV-V progression whose arpeggios swell through the middle, then resolves on a rolled final chord timed to the scene's end. You don't need to do anything to get it.
 
-### Adding Audio to Manim
+- `self.score(bpm=56, duck_db=-14)`: call this as the last line of `construct()` to change the settings.
+- `auto_score = False` on a scene class, or `B3B_SCORE=0` in the environment: render with no music.
+
+### Sound cues
+Put a cue on the beat it belongs to. `offset=` shifts it in seconds, which lets you place it partway through the next `play`.
+
 ```python
-from manim import *
-class SceneWithAudio(Scene):
-    def construct(self):
-        self.add_sound("narration.wav")
-        # animations...
+self.cue("pluck", note=74)                    # a felt-piano note; use for a dot, label or step landing
+self.play(Create(dot))
+self.cue("chime", note=81)                    # a bell for an "aha" or a box drawn round the answer
+self.cue("whoosh", length=1.6)                # a camera move or zoom (rising=False to pull back)
+self.cue("keys", count=len(text))             # typing, spaced 45 ms apart
+self.cue("rise", length=1.2)                 # a build into a reveal; start it 1.2 s ahead
+self.cue("thump")                             # a title landing
 ```
 
-### TTS Options
-- **Coqui XTTS** - Local, natural voice cloning
-- **ElevenLabs** - High quality, API-based
-- **Google TTS / Azure TTS** - Cloud options
-- **pyttsx3** - Simple offline TTS
-- **Tortoise TTS** - Very natural but slower
+`b3b.audio.note_in_key(step, octave)` returns MIDI notes from the score's pentatonic scale, so a run of plucks (`62, 66, 69, 74, 78`) always sits in key with the music. Use cues sparingly: one per visual event, never on every `play`.
 
-### Narration Script Generation
-Follow the patterns from research:
-- Write in second-person where possible ("you might notice...")
-- Use long sentences with natural clauses
-- Ask questions at structural joints
-- Use "let's" sparingly (mostly for camera/directing)
-- Say "notice that..." to draw attention
-- Build anticipation, then reveal
-- Pause after key insights
+### Voiceover
+When a voice is on, **every caption is spoken**. The line starts as the caption appears, and the animations keep playing underneath it. The next caption waits for the line to finish. For a caption with math in it, give the words to say:
 
-### Workflow with Audio
-1. Generate narration script following 3B1B patterns
-2. Generate audio via TTS
-3. Time animations to match narration beats
-4. Add pauses/waits to sync with speech
-5. Use `self.add_sound()` or combine in post with ffmpeg
+```python
+self.say(r"Picture $x^2$ as the area of a square.", spoken="Picture x squared as the area of a square.")
+self.say("Two thin strips.", spoken="")            # stays silent
+self.narrate("A line with no caption.")           # the same, without a caption
+```
+
+For a line that should drive an animation's length, use a block:
+
+```python
+with self.voiceover("Notice what happens as the step shrinks.") as vo:
+    self.play(h_tracker.animate.set_value(0.01), run_time=vo.duration)
+# The block waits until the line has finished before moving on.
+```
+
+The voice backend is set with `B3B_VOICE`:
+
+| `B3B_VOICE` | What you get |
+|---|---|
+| `auto` (default) | ElevenLabs if a key is set, otherwise Kokoro if it is installed, otherwise `none` |
+| `kokoro` | Open-weights Kokoro-82M, no key. `B3B_VOICE_ID` picks the voice (default `am_michael`) and `B3B_VOICE_SPEED` the pace (0.95) |
+| `elevenlabs` | Real narration. `B3B_VOICE_ID` picks the voice and `B3B_VOICE_MODEL` the model (default `eleven_multilingual_v2`) |
+| `say` | macOS `say`, offline. Draft quality, useful for checking timing |
+| `none` | Silent. Durations are estimated at 2.6 words/s so pacing still matches the script |
+
+When a voice is active, the score ducks about 11 dB under each line. Generated audio is cached in `media/b3b_audio/`, so re-renders are free.
+
+### Rendering in the cloud (Kaggle)
+To keep TeX, Manim and the voice model off your machine, render on a Kaggle CPU box. You only need the `kaggle` CLI, logged in. The script pushes a private kernel, installs everything there, renders the files in parallel with Kokoro narration, and downloads the MP4s:
 
 ```bash
-# Combine video and audio with ffmpeg
-ffmpeg -i video.mp4 -i narration.wav -c:v copy -c:a aac output.mp4
+python3 scripts/kaggle_render.py examples out/ \
+    launch_film.py:LaunchFilm 02_winding_circles.py:SquareWaveEpicycles,GibbsPhenomenon
 ```
+
+Add `--voice bm_george` for a British voice, or `--no-voice` for music and cues only.
+
+### Mastering for the web
+Manim's mix lands around -18 to -22 LUFS. Normalise to -16 LUFS / -1.5 dBTP. The video stream is copied untouched, and files with no audio are passed through:
+
+```bash
+scripts/master_audio.sh site/media media/videos/*/1080p60/*.mp4
+```
+
+### Writing narration
+3Blue1Brown narration is conversational and thoughtful, with measured pacing and subtle enthusiasm. Follow the patterns in `docs/3blue1brown_narration_techniques.md`; `scripts/generate_narration.py` scaffolds a script.
+- Write in second person where you can ("you might notice...")
+- Ask questions at structural joints, then build anticipation before the reveal
+- Say "notice that..." to direct attention, and pause after key insights
+- Use one `voiceover` block per sentence, with the animation for that sentence inside it

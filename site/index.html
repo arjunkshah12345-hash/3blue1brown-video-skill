@@ -1,0 +1,585 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>3Blue1Brown Video Skill: explainers that show before they tell</title>
+<meta name="description" content="An agent skill that turns one sentence into a 3Blue1Brown-style Manim explainer: the story, the storyboard, the Python and the rendered film.">
+<meta property="og:title" content="3Blue1Brown Video Skill">
+<meta property="og:description" content="One sentence in, a 3Blue1Brown-style Manim film out.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://arjunkshah12345-hash.github.io/3blue1brown-video-skill/">
+<meta property="og:image" content="https://arjunkshah12345-hash.github.io/3blue1brown-video-skill/media/posters/LaunchFilm.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="https://arjunkshah12345-hash.github.io/3blue1brown-video-skill/">
+<link rel="preload" href="fonts/cmunrm.woff" as="font" type="font/woff" crossorigin>
+<style>
+@font-face { font-family: "CMU"; src: url("fonts/cmunrm.woff") format("woff"); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: "CMU"; src: url("fonts/cmunti.woff") format("woff"); font-weight: 400; font-style: italic; font-display: swap; }
+@font-face { font-family: "CMU"; src: url("fonts/cmunbx.woff") format("woff"); font-weight: 700; font-style: normal; font-display: swap; }
+
+:root {
+  /* 3b1b/manim default_config.yml */
+  --blue: #58C4DD;
+  --blue-dark: #1C758A;
+  --green: #83C167;
+  --yellow: #FFFF00;
+  --gold: #F0AC5F;
+  --red: #FC6255;
+  --teal: #5CD0B3;
+
+  --bg: #000;
+  --surface: #0e1113;
+  --surface-2: #181d20;
+  --ink: #fff;
+  --muted: #b9bdbf;
+  --accent: var(--blue);
+  --on-accent: #000;
+
+  --font: "CMU", "Latin Modern Roman", "Computer Modern Serif", Georgia, serif;
+  --mono: ui-monospace, "SF Mono", Menlo, monospace; /* code blocks only. taste-skill-ignore */
+
+  /* five type steps */
+  --t-display: clamp(52px, 12vw, 196px);
+  --t-head: clamp(42px, 6.6vw, 108px);
+  --t-statement: clamp(23px, 2.5vw, 36px);
+  --t-body: 18px;
+  --t-small: 15px;
+
+  --m: 28px;
+  --gap-section: clamp(120px, 14vw, 200px);
+  --ease-out: cubic-bezier(.16, 1, .3, 1);
+}
+@media (max-width: 700px) { :root { --m: 18px; } }
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font-family: var(--font); font-size: var(--t-body); line-height: 1.5;
+  -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+}
+img, video { display: block; max-width: 100%; height: auto; }
+a { color: inherit; }
+button { font: inherit; color: inherit; }
+::selection { background: var(--yellow); color: #000; }
+:focus-visible { outline: 3px solid var(--yellow); outline-offset: 3px; }
+h1, h2, h3, p { margin: 0; }
+h1, h2 { font-weight: 400; letter-spacing: -0.03em; line-height: 0.98; }
+.wrap { padding-inline: var(--m); }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* buttons: square corners, one fill, decided once */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: .5em;
+  min-height: 48px; padding: 0 22px; border: 0; border-radius: 0;
+  background: var(--accent); color: var(--on-accent);
+  font-size: var(--t-body); text-decoration: none; cursor: pointer;
+  transition: transform .18s var(--ease-out), background-color .18s;
+}
+.btn:hover { background: #8ad6e8; transform: translateY(-2px); }
+.btn:active { transform: translateY(1px) scale(.98); }
+.link { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: .22em; transition: color .15s, text-decoration-color .15s; }
+.link:hover { color: var(--yellow); }
+
+/* ---------- hero ---------- */
+.hero { min-height: 100svh; display: flex; flex-direction: column; }
+.bar { display: flex; justify-content: space-between; align-items: center; padding: 22px var(--m); gap: 16px; }
+.wordmark { font-size: var(--t-body); text-decoration: none; }
+.bar nav { display: flex; align-items: center; gap: 28px; font-size: var(--t-body); }
+.bar nav a:not(.btn) { text-decoration: none; transition: color .15s; }
+.bar nav a:not(.btn):hover { color: var(--yellow); }
+@media (max-width: 700px) { .bar nav a:not(.btn) { display: none; } }
+
+.hero-body { flex: 1; display: flex; flex-direction: column; justify-content: center; padding: 6vh var(--m) 12vh; }
+.hero h1 { font-size: var(--t-display); line-height: 1.0; letter-spacing: -0.035em; }
+.line { display: block; overflow: hidden; padding-bottom: .06em; margin-bottom: -.06em; }
+.line > span { display: inline-block; }
+.slot {
+  display: inline-block; vertical-align: baseline;
+  width: 2.3em; height: .86em; margin-left: .06em; vertical-align: -.14em;
+  background: #0f171a; overflow: hidden;
+}
+.slot video { width: 100%; height: 100%; object-fit: cover; }
+.hero-foot { display: flex; justify-content: space-between; align-items: flex-end; gap: 32px; margin-top: 7vh; flex-wrap: wrap; }
+.hero-foot p { max-width: 40ch; font-size: var(--t-statement); line-height: 1.3; letter-spacing: -0.01em; }
+.hero-foot .actions { display: flex; gap: 24px; align-items: center; font-size: var(--t-body); }
+
+/* ---------- film ---------- */
+.film { padding-top: 0; }
+.film video { width: 100%; aspect-ratio: 16 / 9; background: #000; }
+.film-cap { display: grid; grid-template-columns: repeat(12, 1fr); gap: 0 24px; padding: 28px var(--m) 0; }
+.film-cap p { grid-column: 1 / span 7; font-size: var(--t-statement); line-height: 1.3; }
+.film-cap .note { grid-column: 9 / span 4; font-size: var(--t-small); color: var(--muted); line-height: 1.5; align-self: end; }
+@media (max-width: 800px) { .film-cap p, .film-cap .note { grid-column: 1 / -1; } .film-cap .note { margin-top: 16px; } }
+
+/* ---------- showcase: the input is the headline ---------- */
+.ask { margin-top: var(--gap-section); min-height: 88svh; padding: 0 var(--m); display: flex; flex-direction: column; justify-content: center; }
+.ask-lead { font-size: var(--t-statement); line-height: 1.3; max-width: 30ch; margin-bottom: 40px; }
+.ask-line { display: flex; align-items: baseline; gap: 0; }
+.ask-line .q { font-size: var(--t-head); letter-spacing: -0.035em; line-height: 1.1; color: var(--muted); padding-right: .15em; flex: none; }
+.ask input {
+  flex: 1; min-width: 0; width: 100%; border: 0; background: transparent; color: var(--ink);
+  font: inherit; font-size: var(--t-head); letter-spacing: -0.035em; line-height: 1.1;
+  padding: 0; caret-color: var(--yellow); caret-shape: block;
+}
+.ask input:focus-visible { outline: none; }
+.ask-line:focus-within .q { color: var(--yellow); }
+.plan { margin-top: 48px; display: grid; grid-template-columns: minmax(0, 620px) minmax(0, 1fr); gap: 40px 64px; align-items: start; }
+@media (max-width: 900px) { .plan { grid-template-columns: 1fr; } }
+.beats { background: var(--surface); padding: 22px 24px; }
+.beats-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 14px; font-size: var(--t-small); color: var(--muted); }
+.len { display: flex; gap: 4px; }
+.len button { background: var(--surface-2); border: 0; padding: 6px 12px; min-height: 36px; cursor: pointer; font-size: var(--t-small); transition: background-color .15s, color .15s; }
+.len button:hover { background: #253036; }
+.len button[aria-pressed="true"] { background: var(--ink); color: #000; }
+.beat { display: grid; grid-template-columns: 7.2em 1fr; gap: 14px; padding: 12px 0; font-size: var(--t-body); }
+.beat + .beat { border-top: 1px solid #22292d; } /* interface fragment rows. taste-skill-ignore */
+.beat b { font-weight: 400; display: block; }
+@media (max-width: 700px) { .beat { grid-template-columns: 5.6em 1fr; } }
+.beat .time { font-variant-numeric: tabular-nums; color: var(--muted); font-size: var(--t-small); }
+.beat .act-q b { color: var(--blue); } .beat .act-d b { color: var(--green); } .beat .act-i b { color: var(--yellow); }
+.prompt-out { font-size: var(--t-small); color: var(--muted); }
+.prompt-out pre { margin: 10px 0 16px; padding: 16px 18px; background: var(--surface); color: var(--ink); font-family: var(--mono); font-size: 15px; line-height: 1.55; white-space: pre-wrap; word-break: break-word; }
+.examples { margin-top: 44px; display: flex; flex-wrap: wrap; gap: 8px 28px; font-size: var(--t-body); }
+.examples span { color: var(--muted); }
+.examples button { background: none; border: 0; padding: 4px 0; cursor: pointer; text-decoration: underline; text-underline-offset: .22em; text-decoration-thickness: 1px; transition: color .15s; }
+.examples button:hover { color: var(--yellow); }
+@media (max-width: 700px) {
+  .examples button { background: var(--surface); text-decoration: none; padding: 10px 14px; min-height: 44px; }
+}
+
+/* ---------- arc: stages as one bar ---------- */
+.arc { margin-top: var(--gap-section); padding: 0 var(--m); }
+.arc h2 { font-size: var(--t-head); margin-bottom: 64px; }
+.stages { display: flex; gap: 6px; height: 24vh; min-height: 170px; }
+.stage { padding: 20px; color: #000; display: flex; flex-direction: column; justify-content: space-between; transform-origin: left center; }
+.stage .dur { font-size: var(--t-statement); line-height: 1.1; }
+.stage .pct { font-size: var(--t-small); }
+.s-q { flex: 20 1 0; background: var(--blue); }
+.s-d { flex: 60 1 0; background: var(--green); }
+.s-i { flex: 20 1 0; background: var(--yellow); }
+.stage-notes { display: flex; gap: 6px; margin-top: 18px; }
+.stage-notes p { font-size: var(--t-body); line-height: 1.45; max-width: 26ch; padding-right: 12px; }
+.stage-notes p:nth-child(1) { flex: 20 1 0; } .stage-notes p:nth-child(2) { flex: 60 1 0; } .stage-notes p:nth-child(3) { flex: 20 1 0; }
+@media (max-width: 760px) {
+  .stages { flex-direction: column; height: 70svh; }
+  .stage-notes { display: none; }
+  .stage .note-in { display: block !important; font-size: 16px; margin-top: 8px; }
+}
+.stage .note-in { display: none; }
+.pipeline { margin-top: 110px; display: grid; grid-template-columns: repeat(12, 1fr); gap: 24px; }
+.pipeline h3 { grid-column: 1 / span 4; font-weight: 400; font-size: var(--t-statement); line-height: 1.25; letter-spacing: -0.01em; }
+.pipeline ol { grid-column: 5 / span 8; list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+.pipeline li { background: var(--surface); padding: 18px 16px 22px; min-height: 190px; display: flex; flex-direction: column; justify-content: space-between; transition: background-color .2s; }
+.pipeline li:hover { background: var(--surface-2); }
+.pipeline li strong { font-weight: 400; font-size: var(--t-statement); letter-spacing: -0.01em; }
+.pipeline li span { font-size: var(--t-small); color: var(--muted); line-height: 1.45; }
+.pipeline li:last-child { background: var(--ink); color: #000; }
+.pipeline li:last-child span { color: #333; }
+@media (max-width: 980px) {
+  .pipeline h3, .pipeline ol { grid-column: 1 / -1; }
+  .pipeline ol { grid-template-columns: 1fr; }
+  .pipeline li { min-height: 0; flex-direction: row; align-items: baseline; gap: 16px; justify-content: flex-start; }
+  .pipeline li strong { flex: none; width: 6.4em; }
+}
+
+/* ---------- gallery: prints dropped on the headline ---------- */
+.drop {
+  margin-top: var(--gap-section); background: var(--blue-dark); min-height: 100svh;
+  position: relative; overflow: hidden; padding: 72px var(--m);
+}
+.drop h2 { font-size: var(--t-display); line-height: .9; letter-spacing: -0.04em; }
+.print {
+  position: absolute; z-index: 1; width: 30vw; padding: 8px; background: #fff; border: 0; cursor: pointer;
+  transition: transform .2s var(--ease-out); display: block;
+}
+.print img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; }
+.print:hover, .print:focus-visible { transform: rotate(0deg) scale(1.03) !important; z-index: 5; }
+.p1 { left: 30vw; top: 52%; transform: rotate(-8deg); }
+.p2 { left: 54vw; top: 58%; transform: rotate(6deg); }
+.p3 { right: 3vw; top: 14%; width: 18vw; transform: rotate(-3deg); }
+.drop .drop-note { position: absolute; left: var(--m); bottom: 24px; font-size: var(--t-body); max-width: 40ch; z-index: 2; }
+@media (max-width: 700px) {
+  .drop { min-height: 80svh; }
+  .print { width: 54vw; }
+  .p1 { left: 6vw; top: 40%; transform: rotate(-6deg); }
+  .p2 { left: 38vw; top: 56%; transform: rotate(5deg); }
+  .p3 { display: none; }
+  .drop .drop-note { font-size: 15px; max-width: 30ch; }
+}
+
+/* the player */
+.library { padding: 72px var(--m) 0; display: grid; grid-template-columns: minmax(0, 8fr) minmax(0, 4fr); gap: 32px; align-items: start; }
+@media (max-width: 980px) { .library { grid-template-columns: 1fr; } }
+.stage-player video { width: 100%; aspect-ratio: 16 / 9; background: #000; }
+.now { display: flex; justify-content: space-between; gap: 24px; margin-top: 20px; flex-wrap: wrap; }
+.now h3 { font-weight: 400; font-size: var(--t-statement); line-height: 1.2; letter-spacing: -0.01em; }
+.now p { font-size: var(--t-body); max-width: 52ch; margin-top: 6px; }
+.now .meta { font-size: var(--t-small); color: var(--muted); text-align: right; line-height: 1.6; }
+.now code { font-family: var(--mono); font-size: var(--t-small); color: var(--ink); }
+.reel { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; max-height: calc((100vw - 2 * var(--m)) * 8 / 12 * 9 / 16 + 120px); overflow-y: auto; }
+@media (max-width: 980px) { .reel { max-height: none; } }
+.reel .group { font-size: var(--t-small); color: var(--muted); padding: 18px 0 6px; }
+.reel .group:first-child { padding-top: 0; }
+.reel button {
+  width: 100%; display: grid; grid-template-columns: 112px 1fr auto; gap: 14px; align-items: center;
+  background: var(--surface); border: 0; padding: 8px 14px 8px 8px; text-align: left; cursor: pointer;
+  transition: background-color .15s, transform .15s var(--ease-out);
+}
+.reel button:hover { background: var(--surface-2); transform: translateX(3px); }
+.reel button[aria-current="true"] { background: var(--ink); color: #000; }
+.reel button[aria-current="true"] .dur { color: #333; }
+.reel img { width: 112px; aspect-ratio: 16 / 9; object-fit: cover; }
+.reel .ttl { font-size: var(--t-body); line-height: 1.25; }
+.reel .dur { font-size: var(--t-small); color: var(--muted); font-variant-numeric: tabular-nums; }
+
+/* ---------- features: sentences with switches ---------- */
+.bands { margin-top: var(--gap-section); }
+.band {
+  min-height: 20vh; display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 24px;
+  padding: 28px var(--m); background: var(--bg); color: var(--muted); cursor: pointer;
+  transition: background-color .35s var(--ease-out), color .35s;
+}
+.band:hover { background: var(--surface); }
+.band h3 { font-weight: 400; font-size: clamp(26px, 3.5vw, 58px); line-height: 1.08; letter-spacing: -0.02em; }
+.band .more { font-size: var(--t-body); max-width: 70ch; margin-top: 10px; display: none; }
+.band.on { color: #000; }
+.band.on .more { display: block; }
+.band.on:nth-child(1) { background: var(--blue); }
+.band.on:nth-child(2) { background: var(--green); }
+.band.on:nth-child(3) { background: var(--gold); }
+.band.on:nth-child(4) { background: var(--red); }
+.band.on:nth-child(5) { background: var(--teal); }
+.switch {
+  width: 2.2em; height: 1.15em; font-size: clamp(26px, 3.5vw, 58px); border-radius: 1em; border: 0; padding: 0;
+  background: var(--surface-2); position: relative; cursor: pointer; flex: none;
+}
+.switch::after {
+  content: ""; position: absolute; top: .12em; left: .12em; width: .91em; height: .91em; border-radius: 50%;
+  background: var(--muted); transition: transform .3s var(--ease-out), background-color .3s;
+}
+.band.on .switch { background: #000; }
+.band.on .switch::after { transform: translateX(1.05em); background: #fff; }
+@media (max-width: 700px) {
+  .band { min-height: 132px; }
+  .band h3 { font-size: 6.4vw; }
+  .switch { font-size: 26px; }
+  .band .more { font-size: 15px; }
+}
+
+/* ---------- install: the idea again, inverted ---------- */
+.install { margin-top: var(--gap-section); background: var(--ink); color: #000; min-height: 90svh; padding: 9vh var(--m) 40px; display: flex; flex-direction: column; justify-content: space-between; gap: 48px; }
+.install h2 { font-size: var(--t-display); line-height: .92; letter-spacing: -0.04em; }
+.install pre { margin: 0; background: #eef0f1; padding: 22px 24px; font-family: var(--mono); font-size: 15px; line-height: 1.7; overflow-x: auto; max-width: 860px; }
+.install pre .c { color: #5b6366; }
+.install-foot { display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; flex-wrap: wrap; }
+.install-foot p { font-size: var(--t-body); max-width: 46ch; }
+.install .btn { min-height: 56px; padding: 0 28px; }
+.install .btn:hover { background: #1C758A; color: #fff; }
+@media (max-width: 700px) { .install .btn { width: 100%; } }
+
+/* ---------- footer ---------- */
+footer { background: var(--ink); color: #000; position: relative; overflow: hidden; min-height: 100svh; padding: 160px var(--m) 0; display: flex; flex-direction: column; }
+.f-top { display: grid; grid-template-columns: repeat(12, 1fr); gap: 24px; }
+.f-top .inv { grid-column: 1 / span 7; }
+.f-top h2 { font-size: var(--t-head); line-height: 1; letter-spacing: -0.03em; margin-bottom: 28px; }
+.f-top ul { grid-column: 10 / span 3; list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; font-size: var(--t-body); }
+@media (max-width: 800px) { .f-top .inv, .f-top ul { grid-column: 1 / -1; } .f-top ul { flex-direction: row; flex-wrap: wrap; gap: 8px 20px; } }
+.legal { margin-top: auto; display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; font-size: var(--t-small); color: #333; padding-bottom: 12px; }
+.giant { font-size: 27vw; line-height: .8; letter-spacing: -0.05em; white-space: nowrap; transform: translateY(24%); margin-left: -.04em; }
+@media (max-width: 700px) { .giant { font-size: 34vw; } }
+
+/* ---------- motion ---------- */
+.js .rise { opacity: 0; transform: translateY(24px); transition: opacity .8s var(--ease-out), transform .8s var(--ease-out); transition-delay: calc(var(--i, 0) * 75ms); }
+.js .rise.in { opacity: 1; transform: none; }
+.js .line > span { transform: translateY(105%); transition: transform .9s var(--ease-out); }
+.js .line:nth-child(2) > span { transition-delay: .11s; }
+.js .loaded .line > span { transform: none; }
+.js .stage { transform: scaleX(.001); transition: transform 1s var(--ease-out); }
+.js .stage:nth-child(2) { transition-delay: .12s; } .js .stage:nth-child(3) { transition-delay: .24s; }
+.js .stages.in .stage { transform: none; }
+@media (max-width: 760px) { .js .stage { transform: scaleY(.001); transform-origin: top; } }
+@media (prefers-reduced-motion: reduce) {
+  .js .rise { transform: none; transition: opacity .3s; }
+  .js .line > span, .js .stage { transform: none !important; transition: none; }
+  .print, .btn, .reel button { transition: none; }
+}
+</style>
+</head>
+<body>
+<script>document.documentElement.classList.add('js')</script>
+
+<header class="hero">
+  <div class="bar">
+    <a class="wordmark" href="#top" id="top">3b1b video skill</a>
+    <nav aria-label="Primary">
+      <a href="#film">Film</a>
+      <a href="#arc">How it works</a>
+      <a href="#gallery">Gallery</a>
+      <a class="btn" href="#install">Get the skill</a>
+    </nav>
+  </div>
+  <div class="hero-body">
+    <h1 aria-label="Show it, then name it.">
+      <span class="line"><span>Show it,<span class="slot" aria-hidden="true"><video src="media/hero-loop.mp4" poster="media/posters/hero-loop.jpg" autoplay muted loop playsinline width="1020" height="378"></video></span></span></span>
+      <span class="line"><span>then name it.</span></span>
+    </h1>
+    <div class="hero-foot">
+      <p class="rise">An agent skill that turns one sentence into a 3Blue1Brown-style Manim film, story first.</p>
+      <div class="actions rise" style="--i:1">
+        <a class="btn" href="#install">Get the skill</a>
+        <a class="link" href="#film">Watch the film</a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="film" id="film" aria-label="Launch film">
+    <video class="rise" src="media/LaunchFilm.mp4" poster="media/posters/LaunchFilm.jpg" controls preload="metadata" playsinline width="1920" height="1080"></video>
+    <div class="film-cap">
+      <p class="rise">The film proves the point by being it: an agent wrote this proof that the derivative of x² is 2x.</p>
+      <p class="note rise" style="--i:1">1 minute 41. 1080p at 60 frames per second, rendered with Manim Community 0.21 on a Kaggle CPU box. Sound on: the captions are narrated by the open Kokoro voice, and the piano score and every cue are synthesised by the skill itself. Source: <code>examples/launch_film.py</code>.</p>
+    </div>
+  </section>
+
+  <section class="ask" id="try" aria-labelledby="ask-label">
+    <p class="ask-lead rise" id="ask-label">Type an idea. This is the beat sheet the skill plans before it writes a line of Python.</p>
+    <div class="ask-line rise" style="--i:1" data-ui>
+      <span class="q" aria-hidden="true">why</span>
+      <label class="sr" for="topic">Topic for your video</label>
+      <input id="topic" type="text" value="d/dx x² is 2x" autocomplete="off" spellcheck="false">
+    </div>
+    <div class="plan">
+      <div class="beats rise" style="--i:2" data-ui aria-live="polite">
+        <div class="beats-head">
+          <span id="sheet-label">Beat sheet, by the 20 / 60 / 20 rule</span>
+          <div class="len" role="group" aria-label="Film length">
+            <button type="button" data-len="60" aria-pressed="false">1 min</button>
+            <button type="button" data-len="90" aria-pressed="true">90 s</button>
+            <button type="button" data-len="180" aria-pressed="false">3 min</button>
+          </div>
+        </div>
+        <div id="beats"></div>
+      </div>
+      <div class="prompt-out rise" style="--i:3">
+        Paste this to your agent:
+        <pre id="prompt" data-ui></pre>
+        <button class="btn" type="button" id="copy-prompt">Copy the prompt</button>
+      </div>
+    </div>
+    <div class="examples rise" style="--i:4">
+      <span>Or try</span>
+      <button type="button" data-q="a square wave is built from spinning circles">a square wave from circles</button>
+      <button type="button" data-q="the determinant measures area">what a determinant measures</button>
+      <button type="button" data-q="e^(iπ) = −1">why e^(iπ) = −1</button>
+    </div>
+  </section>
+
+  <section class="arc" id="arc" aria-labelledby="arc-h">
+    <h2 id="arc-h" class="rise">Every film, one arc</h2>
+    <div class="stages" data-ui>
+      <div class="stage s-q"><span class="dur">The first fifth</span><span class="pct">Question<span class="note-in">A puzzle worth a minute: show the object before naming it.</span></span></div>
+      <div class="stage s-d"><span class="dur">The middle three fifths</span><span class="pct">Discovery<span class="note-in">Concrete numbers first, one idea per beat, aha moments spaced out.</span></span></div>
+      <div class="stage s-i"><span class="dur">The last fifth</span><span class="pct">Insight<span class="note-in">Tie it back to the question, then stop.</span></span></div>
+    </div>
+    <div class="stage-notes">
+      <p class="rise">First the question: a puzzle worth a minute, with the object on screen before its name.</p>
+      <p class="rise" style="--i:1">Then discovery: concrete numbers before symbols, one idea per beat, the aha moments spaced out so each one lands.</p>
+      <p class="rise" style="--i:2">Last the insight: tie it back to the question, then stop.</p>
+    </div>
+
+    <div class="pipeline">
+      <h3 class="rise">Five steps, sentence to MP4.</h3>
+      <ol>
+        <li class="rise"><strong>Question</strong><span>Finds the aha moment and the one picture that carries it.</span></li>
+        <li class="rise" style="--i:1"><strong>Script</strong><span>Spoken, second person, a question at every joint.</span></li>
+        <li class="rise" style="--i:2"><strong>Storyboard</strong><span>One idea per beat, timed to the arc.</span></li>
+        <li class="rise" style="--i:3"><strong>Manim</strong><span>Python scenes on the b3b house style.</span></li>
+        <li class="rise" style="--i:4"><strong>Render</strong><span>manim render, with narration, score and cues mixed in.</span></li>
+      </ol>
+    </div>
+  </section>
+
+  <section id="gallery" aria-labelledby="gallery-h">
+    <div class="drop">
+      <h2 id="gallery-h">Eleven films.<br>One hand.</h2>
+      <button class="print p1" type="button" data-play="SquareWaveEpicycles" aria-label="Play: A square wave from spinning circles"><img src="media/posters/SquareWaveEpicycles.jpg" alt="Epicycles drawing a square wave" width="1280" height="720" loading="lazy"></button>
+      <button class="print p2" type="button" data-play="ShearTransform" aria-label="Play: A shear leaves area alone"><img src="media/posters/ShearTransform.jpg" alt="A grid under a shear with its basis vectors" width="1280" height="720" loading="lazy"></button>
+      <button class="print p3" type="button" data-play="EssenceOfDerivative" aria-label="Play: The essence of the derivative"><img src="media/posters/EssenceOfDerivative.jpg" alt="A tangent line touching a parabola" width="1280" height="720" loading="lazy"></button>
+      <p class="drop-note">Every frame below was rendered from the skill's example library. Pick a print or a title to play it.</p>
+    </div>
+
+    <div class="library">
+      <div class="stage-player">
+        <video id="player" controls playsinline preload="metadata" width="1920" height="1080" poster="media/posters/EssenceOfDerivative.jpg" src="media/EssenceOfDerivative.mp4"></video>
+        <div class="now">
+          <div>
+            <h3 id="now-title">The essence of the derivative</h3>
+            <p id="now-desc"></p>
+          </div>
+          <div class="meta" id="now-meta"></div>
+        </div>
+      </div>
+      <ul class="reel" id="reel" aria-label="All films"></ul>
+    </div>
+  </section>
+
+  <section class="bands" aria-label="What the skill brings">
+    <div class="band on" data-band><div><h3>It plans the story before the code.</h3><p class="more">Question, discovery, insight, timed 20 / 60 / 20, with the narration written before any Python.</p></div><button class="switch" type="button" role="switch" aria-checked="true" aria-label="It plans the story before the code"></button></div>
+    <div class="band" data-band><div><h3>It paints in the channel's own colours.</h3><p class="more">Blue #58C4DD, green #83C167, yellow, red: hex values taken from 3b1b/manim's default config, each with one meaning.</p></div><button class="switch" type="button" role="switch" aria-checked="false" aria-label="It paints in the channel's own colours"></button></div>
+    <div class="band on" data-band><div><h3>It knows the signature moves.</h3><p class="more">Equation morphs, epicycles, linear maps, camera zooms and Riemann sums: seven modules in b3b/, eleven working scenes.</p></div><button class="switch" type="button" role="switch" aria-checked="true" aria-label="It knows the signature moves"></button></div>
+    <div class="band" data-band><div><h3>It scores and narrates its own films.</h3><p class="more">audio.py synthesises a piano score and the sound cues, and the open Kokoro voice speaks the captions. No API keys, and the whole render can run on a free Kaggle box.</p></div><button class="switch" type="button" role="switch" aria-checked="false" aria-label="It scores and narrates its own films"></button></div>
+    <div class="band" data-band><div><h3>It stays plain Manim.</h3><p class="more">Every scene renders with the stock manim CLI. Nothing is patched, so you can keep editing by hand.</p></div><button class="switch" type="button" role="switch" aria-checked="false" aria-label="It stays plain Manim"></button></div>
+  </section>
+
+  <section class="install" id="install" aria-labelledby="install-h">
+    <h2 id="install-h" class="rise">Now show<br>your idea.</h2>
+<pre class="rise" style="--i:1" id="install-cmd"><span class="c"># put the skill where your agent finds skills</span>
+git clone https://github.com/arjunkshah12345-hash/3blue1brown-video-skill \
+  ~/.claude/skills/3blue1brown-video          <span class="c"># or ~/.agents/skills/</span>
+
+<span class="c"># Manim and a LaTeX install for the equations</span>
+pip install manim
+brew install --cask mactex-no-gui            <span class="c"># or TinyTeX</span>
+
+<span class="c"># then ask</span>
+"make a 3b1b-style video on why d/dx x² = 2x"</pre>
+    <div class="install-foot">
+      <p class="rise">The skill, its example library and the research notes, in one folder. Open source under MIT, <a class="link" href="https://github.com/arjunkshah12345-hash/3blue1brown-video-skill">on GitHub</a>.</p>
+      <div class="rise" style="--i:1" >
+        <a class="btn" href="media/3blue1brown-video-skill.zip" download>Download the skill</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="f-top">
+    <div class="inv">
+      <h2>Render one tonight.</h2>
+      <button class="btn" type="button" id="copy-install">Copy the install steps</button>
+    </div>
+    <ul>
+      <li><a class="link" href="https://github.com/arjunkshah12345-hash/3blue1brown-video-skill">Source on GitHub</a></li>
+      <li><a class="link" href="https://www.manim.community/">Manim Community</a></li>
+      <li><a class="link" href="https://github.com/3b1b/manim">3b1b/manim</a></li>
+      <li><a class="link" href="https://www.3blue1brown.com/">3Blue1Brown</a></li>
+      <li><a class="link" href="#top">Back to the top</a></li>
+    </ul>
+  </div>
+  <div class="legal">
+    <span>Unofficial. Not affiliated with 3Blue1Brown or Grant Sanderson; made in admiration of their work.</span>
+    <span>Films rendered with Manim Community. Typeset in Computer Modern.</span>
+  </div>
+  <div class="giant" aria-hidden="true">3b1b video</div>
+</footer>
+
+<script>
+const FILMS = [
+  { id: 'LaunchFilm', group: 'The launch', title: 'The launch film', dur: '1:41', file: 'examples/launch_film.py',
+    desc: 'A question, a growing-square proof, then the reveal: an agent wrote it.' },
+  { id: 'EssenceOfDerivative', group: 'Calculus', title: 'The essence of the derivative', dur: '0:41', file: 'examples/essence_of_derivative_simple.py',
+    desc: 'Secant lines slide into a tangent: slope at a point, built from slopes between two.' },
+  { id: 'DerivativeDefinition', group: 'Calculus', title: 'From average to instantaneous', dur: '0:18', file: 'examples/01_morphing_equations.py',
+    desc: 'The difference quotient, one limit at a time, every surviving symbol kept on screen.' },
+  { id: 'WindingUnitCircle', group: 'Fourier', title: 'Winding around the unit circle', dur: '0:22', file: 'examples/02_winding_circles.py',
+    desc: 'A point moves around a circle at constant speed; its height traces sine.' },
+  { id: 'SquareWaveEpicycles', group: 'Fourier', title: 'A square wave from spinning circles', dur: '0:26', file: 'examples/02_winding_circles.py',
+    desc: 'Seven odd harmonics, each smaller than the last, already look square.' },
+  { id: 'GibbsPhenomenon', group: 'Fourier', title: 'The Gibbs phenomenon', dur: '0:26', file: 'examples/02_winding_circles.py',
+    desc: 'Adding terms sharpens the corners, but the overshoot at the jump refuses to vanish.' },
+  { id: 'ShearTransform', group: 'Linear algebra', title: 'A shear leaves area alone', dur: '0:18', file: 'examples/03_vector_transformations.py',
+    desc: 'Watch the basis vectors: every vertical line tilts, and the unit square keeps its area.' },
+  { id: 'RotationTransform', group: 'Linear algebra', title: 'A rotation turns the whole plane', dur: '0:17', file: 'examples/03_vector_transformations.py',
+    desc: 'A 90 degree rotation is an isometry: lengths and area both survive.' },
+  { id: 'ScaleAndDeterminant', group: 'Linear algebra', title: 'Scaling the axes scales the area', dur: '0:15', file: 'examples/03_vector_transformations.py',
+    desc: 'A diagonal matrix stretches each axis, and the determinant is the area factor.' },
+  { id: 'EulerIdentityMorph', group: 'Equations', title: "Euler's identity", dur: '0:33', file: 'examples/01_morphing_equations.py',
+    desc: 'Five constants, one line, derived by letting each symbol travel to its new home.' },
+  { id: 'PythagoreanRearrangement', group: 'Equations', title: 'The Pythagorean theorem', dur: '0:20', file: 'examples/01_morphing_equations.py',
+    desc: 'The same statement, read from the other end, then solved without a single cut.' },
+];
+
+/* gallery */
+const reel = document.getElementById('reel');
+const player = document.getElementById('player');
+let lastGroup = '';
+for (const f of FILMS) {
+  if (f.group !== lastGroup) {
+    const g = document.createElement('li'); g.className = 'group'; g.textContent = f.group; reel.append(g); lastGroup = f.group;
+  }
+  const li = document.createElement('li');
+  li.innerHTML = `<button type="button" data-id="${f.id}"><img src="media/thumbs/${f.id}.jpg" alt="" width="224" height="126" loading="lazy"><span class="ttl">${f.title}</span><span class="dur">${f.dur}</span></button>`;
+  reel.append(li);
+}
+function show(id, play) {
+  const f = FILMS.find(x => x.id === id); if (!f) return;
+  if (!player.src.endsWith(`/${f.id}.mp4`)) { player.poster = `media/posters/${f.id}.jpg`; player.src = `media/${f.id}.mp4`; }
+  document.getElementById('now-title').textContent = f.title;
+  document.getElementById('now-desc').textContent = f.desc;
+  document.getElementById('now-meta').innerHTML = `${f.group}, ${f.dur}<br><code>${f.file}</code><br><a class="link" href="media/${f.id}.mp4" download>Download MP4</a>`;
+  reel.querySelectorAll('button').forEach(b => b.setAttribute('aria-current', b.dataset.id === id ? 'true' : 'false'));
+  if (play) { player.play().catch(() => {}); }
+}
+reel.addEventListener('click', e => { const b = e.target.closest('button'); if (b) show(b.dataset.id, true); });
+document.querySelectorAll('[data-play]').forEach(p => p.addEventListener('click', () => {
+  show(p.dataset.play, true);
+  document.querySelector('.library').scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
+}));
+show('EssenceOfDerivative', false);
+
+/* the live beat sheet */
+const topic = document.getElementById('topic');
+const beatsEl = document.getElementById('beats');
+const promptEl = document.getElementById('prompt');
+let len = 90;
+const clock = s => `${Math.floor(s / 60)}:${String(Math.round(s % 60)).padStart(2, '0')}`;
+const lenWords = s => s === 60 ? 'about a minute' : s === 90 ? 'about 90 seconds' : 'about 3 minutes';
+function render() {
+  const t = topic.value.trim() || 'this works';
+  const q = len * 0.2, d = len * 0.8;
+  const ahas = [0.25, 0.5, 0.75].map(k => clock(q + (d - q) * k));
+  beatsEl.innerHTML = `
+    <div class="beat act-q"><span class="time">${clock(0)}–${clock(q)}</span><span><b>Question</b>Open on the puzzle: why ${escapeHtml(t)}? Show the object before naming anything.</span></div>
+    <div class="beat act-d"><span class="time">${clock(q)}–${clock(d)}</span><span><b>Discovery</b>Concrete example first. Aha beats near ${ahas.join(', ')}, one idea each.</span></div>
+    <div class="beat act-i"><span class="time">${clock(d)}–${clock(len)}</span><span><b>Insight</b>Name what we saw, tie it back to the opening question, stop.</span></div>`;
+  promptEl.textContent = `make a 3b1b-style video on why ${t}, ${lenWords(len)}`;
+}
+function escapeHtml(s) { return s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+topic.addEventListener('input', render);
+document.querySelectorAll('.len button').forEach(b => b.addEventListener('click', () => {
+  len = +b.dataset.len;
+  document.querySelectorAll('.len button').forEach(x => x.setAttribute('aria-pressed', x === b ? 'true' : 'false'));
+  render();
+}));
+document.querySelectorAll('.examples button').forEach(b => b.addEventListener('click', () => { topic.value = b.dataset.q; render(); topic.focus(); }));
+render();
+
+/* copy buttons */
+function copyFrom(btn, text) {
+  const done = () => { const o = btn.textContent; btn.textContent = 'Copied'; setTimeout(() => btn.textContent = o, 1400); };
+  if (navigator.clipboard) navigator.clipboard.writeText(text).then(done, () => {});
+}
+document.getElementById('copy-prompt').addEventListener('click', e => copyFrom(e.currentTarget, promptEl.textContent));
+document.getElementById('copy-install').addEventListener('click', e => copyFrom(e.currentTarget, document.getElementById('install-cmd').textContent));
+
+/* feature switches */
+document.querySelectorAll('[data-band]').forEach(band => {
+  const sw = band.querySelector('.switch');
+  const toggle = () => { const on = !band.classList.contains('on'); band.classList.toggle('on', on); sw.setAttribute('aria-checked', on); };
+  band.addEventListener('click', e => { if (e.target !== sw) toggle(); });
+  sw.addEventListener('click', e => { e.stopPropagation(); toggle(); });
+});
+
+/* motion */
+requestAnimationFrame(() => document.querySelector('.hero h1').classList.add('loaded'));
+const io = new IntersectionObserver(entries => entries.forEach(en => {
+  if (en.isIntersecting) { en.target.classList.add('in'); io.unobserve(en.target); }
+}), { rootMargin: '0px 0px -8% 0px' });
+document.querySelectorAll('.rise, .stages').forEach(el => io.observe(el));
+</script>
+</body>
+</html>

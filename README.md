@@ -1,57 +1,79 @@
-# 3Blue1Brown Video Creation Skill
+# 3Blue1Brown Video Skill
 
-A comprehensive skill for creating educational animations in the style of Grant Sanderson's 3Blue1Brown YouTube channel.
+An agent skill that turns one sentence into a 3Blue1Brown-style explainer. Your agent writes the story, the storyboard and the Manim code, then renders a narrated film with a score.
 
-## What This Skill Does
+[![The launch film](site/media/posters/LaunchFilm.jpg)](https://arjunkshah12345-hash.github.io/3blue1brown-video-skill/)
 
-This skill helps you create 3Blue1Brown-style explainer videos that combine:
-- **Question-driven storytelling** - Start with curiosity, end with insight
-- **Visual-first explanations** - Show before telling, build intuition geometrically
-- **Elegant programmatic animation** - Use Manim to create smooth, purposeful animations
-- **Pedagogically sound structure** - Guide viewers to "aha moments" through discovery
+**[Watch the films →](https://arjunkshah12345-hash.github.io/3blue1brown-video-skill/)** The site has eleven of them, all rendered by the skill's own example library.
 
-## Key Features
+## Install
 
-- Narrative arc framework (Hook → Exploration → Resolution)
-- Manim code generation following 3B1B patterns
-- Animation technique library (transforms, morphs, emphasis, camera)
-- Storytelling patterns and pacing guidance
-- Templates and examples
+Put the skill folder where your agent looks for skills:
 
-## When to Use
+```bash
+git clone https://github.com/arjunkshah12345-hash/3blue1brown-video-skill ~/.claude/skills/3blue1brown-video
+# Codex, Cursor and other agents that read ~/.agents/skills:
+git clone https://github.com/arjunkshah12345-hash/3blue1brown-video-skill ~/.agents/skills/3blue1brown-video
+```
 
-Use this skill when creating:
-- Math/CS explainer videos
-- Visual proofs and derivations
-- Conceptual animations for complex topics
-- Educational content inspired by 3Blue1Brown
+To render locally you need [Manim Community](https://www.manim.community/) and LaTeX:
 
-## Workflow
+```bash
+pip install manim
+brew install --cask mactex-no-gui   # or TeX Live / TinyTeX
+```
 
-1. **Understand the topic** - Identify core concept and "aha moment"
-2. **Craft narrative** - Write hook, questions, and resolution
-3. **Storyboard** - Plan visual beats
-4. **Generate Manim code** - Create animated scene
-5. **Polish** - Timing, pacing, visual elegance
+Or install nothing and render on Kaggle instead (see below).
 
-## Quick Start
+## Use
 
-Ask the agent to create a 3Blue1Brown-style video on any topic. It will:
-- Research the concept and find the best visual approach
-- Write a question-driven script
-- Generate clean Manim Python code
-- Include detailed comments and structure
+Ask your agent:
 
-## Examples of Topics
+> make a 3b1b-style video on why d/dx x² = 2x
 
-- Fourier Transform / Signal Processing
-- Linear Algebra concepts
-- Calculus intuition
-- Neural Networks
-- Complex Numbers
-- Cryptography
-- Algorithms and Data Structures
+The skill:
 
-## Philosophy
+1. finds the question and the "aha" in the topic;
+2. writes a three-act script (question, discovery, insight) before any code;
+3. storyboards the visual beats;
+4. writes the Manim scene using the `b3b/` library;
+5. renders it with narration, music and sound cues mixed in.
 
-> "The goal is to use animation as a means to illustrate a point, and the best way to do that is to have a story. And when I use that word I mean appeals to emotion, I mean having comedy, having some notion of characters that you care about, I mean having a mystery you need to see resolved." - Grant Sanderson
+## What's inside
+
+| Path | What it is |
+|---|---|
+| `SKILL.md` | The skill: story structure, animation principles, code patterns, audio |
+| `examples/` | Eleven working scenes: equation morphs, Fourier epicycles, linear maps, derivatives, and the launch film |
+| `examples/b3b/` | The scene library: palette, captions, camera, Fourier, graphing and audio |
+| `docs/` | Research notes on 3Blue1Brown's animation and narration techniques |
+| `references/`, `templates/` | Storytelling reference and a starter scene |
+| `scripts/` | Cloud rendering, audio mastering and a narration scaffold |
+| `site/` | The launch site |
+
+## Sound
+
+Every `b3b` scene has sound with nothing extra to install:
+
+- **Score:** a quiet felt-piano score in D major, synthesised with numpy and scipy, timed to the scene and laid under it automatically.
+- **Cues:** plucks, chimes, whooshes and key clicks, placed with `self.cue(...)`.
+- **Voiceover:** every caption is spoken. `B3B_VOICE` picks the voice:
+  - `kokoro` uses the open Kokoro-82M model, no key needed;
+  - `elevenlabs` uses ElevenLabs;
+  - `say` uses macOS `say`, for drafts;
+  - `none` is silent but keeps the timing.
+
+## Render in the cloud
+
+You need only the [`kaggle` CLI](https://github.com/Kaggle/kaggle-api), logged in. The script pushes a private Kaggle kernel, installs Manim, TeX and the Kokoro voice there, renders the scenes in parallel at 1080p60, and downloads the MP4s:
+
+```bash
+python3 scripts/kaggle_render.py examples out/ launch_film.py:LaunchFilm
+scripts/master_audio.sh site/media out/*.mp4   # -16 LUFS for the web
+```
+
+## License
+
+MIT. See [LICENSE](LICENSE).
+
+This is an unofficial project, not affiliated with 3Blue1Brown or Grant Sanderson. It was made in admiration of their work, and builds on [Manim Community](https://www.manim.community/) and [3b1b/manim](https://github.com/3b1b/manim).
