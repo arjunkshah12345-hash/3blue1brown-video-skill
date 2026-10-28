@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+.DS_Store
+# Manim output
+media/
+!site/media/
+# built by the Pages workflow
+site/media/3blue1brown-video-skill.zip

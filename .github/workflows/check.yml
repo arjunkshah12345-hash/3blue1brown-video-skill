@@ -1,0 +1,28 @@
+name: check
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: SKILL.md front matter parses
+        run: |
+          pip install -q pyyaml
+          python - <<'PY'
+          import yaml
+          meta = yaml.safe_load(open("SKILL.md").read().split("---")[1])
+          assert meta["name"] == "3blue1brown-video", meta
+          assert meta["description"], "description is empty"
+          print(meta["name"], "ok")
+          PY
+      - name: Python compiles
+        run: python -m compileall -q examples scripts templates
+      - name: Shell scripts parse
+        run: bash -n scripts/*.sh
